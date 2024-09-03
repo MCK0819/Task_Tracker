@@ -76,6 +76,17 @@ def update_task_status(task_id: int, status: str) -> None:
     else:
         print(f'Task {task_id} not found')
 
+# 작업 목록을 출력하는 함수
+def list_tasks(status: Optional[str] = None) -> None:
+    tasks = load_tasks()
+    filtered_tasks = [task for task in tasks if status is None or task['status'] == status]
+
+    if not filtered_tasks:
+        print('No tasks found')
+    else:
+        for task in filtered_tasks:
+            print(f"[{task['id']}] {task['description']} - {task['status']}")
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Task Tracker CLI - A simple command line tool to track and manage tasks.",
@@ -125,6 +136,19 @@ def parse_args():
     )
     parser_mark_done.add_argument("task_id", type=int, help="ID of the task to mark as done")
 
+    # list command
+    parser_list = subparsers.add_parser(
+        "list",
+        help="List tasks",
+        description="Lists tasks, optionally filtering by status (todo, in-progress, done)."
+    )
+    parser_list.add_argument(
+        "status",
+        nargs="?",
+        choices=["todo", "in-progress", "done"],
+        help="Filter tasks by status"
+    )
+
     return parser.parse_args()
 
 args = parse_args()
@@ -139,5 +163,7 @@ elif args.command == "mark-in-progress":
     update_task_status(args.task_id, "in-progress")
 elif args.command == "mark-done":
     update_task_status(args.task_id, "done")
+elif args.command == "list":
+    list_tasks(args.status)
 else:
     print("Unknown command. Use -h or --help for a list of available commands.")
